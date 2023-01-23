@@ -314,6 +314,11 @@ def save_rt_plot(a, c, r_0, t_0, r_corner, t_corner, trials, file_name):
 
     axes.set_xlim([0, t_0 * Trial.AXIS_LIMIT_MARGIN_FACTOR])
     axes.set_ylim([0, r_0 * Trial.AXIS_LIMIT_MARGIN_FACTOR])
+    axes.set(
+        title=f'Spacetime walk ({file_name})',
+        xlabel='Time / h',
+        ylabel='Failure Count',
+    )
 
     plt.savefig(file_name)
 
