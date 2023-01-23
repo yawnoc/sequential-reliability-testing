@@ -191,6 +191,10 @@ def maximum_test_time(theta_0, theta_1, alpha, beta):
     return theta_0 * chi2.ppf(alpha, df=2*r_0) / 2
 
 
+def perform_test(theta_0, theta_1, alpha, beta, item_count):
+    pass
+
+
 def parse_command_line_arguments():
     argument_parser = argparse.ArgumentParser(description=DESCRIPTION)
     argument_parser.add_argument(
@@ -225,11 +229,14 @@ def parse_command_line_arguments():
 
 def main():
     parsed_arguments = parse_command_line_arguments()
+
     theta_0 = parsed_arguments.theta_0
     theta_1 = parsed_arguments.theta_1
     alpha = parsed_arguments.alpha
     beta = parsed_arguments.beta
     item_count = parsed_arguments.item_count
+
+    perform_test(theta_0, theta_1, alpha, beta, item_count)
 
 
 if __name__ == '__main__':
