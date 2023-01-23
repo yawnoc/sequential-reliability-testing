@@ -100,6 +100,7 @@ Of note:
 """
 import argparse
 import random
+from collections import Counter
 
 import matplotlib.pyplot as plt
 from numpy import log
@@ -107,15 +108,15 @@ from scipy.stats import chi2
 
 
 class Trial:
-    TERMINATE_ACCEPTED = 1
-    TERMINATE_TIME_REACHED = 2
-    TERMINATE_REJECTED = -1
-    TERMINATE_FAILURES_REACHED = -2
+    OUTCOME_ACCEPT_DECISIVE = 'ACCEPT_DECISIVE'
+    OUTCOME_ACCEPT_TRUNCATED = 'ACCEPT_TRUNCATED'
+    OUTCOME_REJECT_DECISIVE = 'REJECT_DECISIVE'
+    OUTCOME_REJECT_TRUNCATED = 'REJECT_TRUNCATED'
 
-    COLOUR_ACCEPTED = 'green'
-    COLOUR_TIME_REACHED = 'turquoise'
-    COLOUR_REJECTED = 'crimson'
-    COLOUR_FAILURES_REACHED = 'orangered'
+    COLOUR_ACCEPT_DECISIVE = 'green'
+    COLOUR_ACCEPT_TRUNCATED = 'turquoise'
+    COLOUR_REJECT_DECISIVE = 'crimson'
+    COLOUR_REJECT_TRUNCATED = 'orangered'
 
     AXIS_LIMIT_MARGIN_FACTOR = 1.05
 
@@ -137,13 +138,13 @@ class Trial:
                 if r <= a + b * next_t:
                     t = (r - a) / b
                     walk_coordinates.append((t, r))
-                    termination = Trial.TERMINATE_ACCEPTED
+                    outcome = Trial.OUTCOME_ACCEPT_DECISIVE
                     break
             else:
                 if next_t >= t_0:
                     t = t_0
                     walk_coordinates.append((t, r))
-                    termination = Trial.TERMINATE_TIME_REACHED
+                    outcome = Trial.OUTCOME_ACCEPT_TRUNCATED
                     break
             t = next_t
             walk_coordinates.append((t, r))
@@ -160,18 +161,18 @@ class Trial:
                 if next_r >= c + b * t:
                     r = next_r
                     walk_coordinates.append((t, r))
-                    termination = Trial.TERMINATE_REJECTED
+                    outcome = Trial.OUTCOME_REJECT_DECISIVE
                     break
             else:
                 if next_r >= r_0:
                     r = r_0
                     walk_coordinates.append((t, r))
-                    termination = Trial.TERMINATE_FAILURES_REACHED
+                    outcome = Trial.OUTCOME_REJECT_TRUNCATED
                     break
             r = next_r
             walk_coordinates.append((t, r))
 
-        self.termination = termination
+        self.outcome = outcome
         self.walk_coordinates = walk_coordinates
 
 
@@ -293,6 +294,12 @@ def test(theta_0, theta_1, theta, alpha, beta, item_count, trial_count, seed):
         f' -i {item_count} -t {trial_count} -s {seed}'
     )
 
+    save_log(
+        theta_0, theta_1, theta, alpha, beta, item_count, trial_count, seed,
+        a, b, c, r_0, t_0, r_corner, t_corner,
+        trials,
+        f'{base_name}.log'
+    )
     save_rt_plot(
         a, c, r_0, t_0, r_corner, t_corner,
         trials,
@@ -300,13 +307,84 @@ def test(theta_0, theta_1, theta, alpha, beta, item_count, trial_count, seed):
     )
 
 
+def save_log(
+    theta_0, theta_1, theta, alpha, beta, item_count, trial_count, seed,
+    a, b, c, r_0, t_0, r_corner, t_corner,
+    trials,
+    file_name,
+):
+    counts = Counter([trial.outcome for trial in trials])
+
+    accept_decisive_count = counts[Trial.OUTCOME_ACCEPT_DECISIVE]
+    accept_truncated_count = counts[Trial.OUTCOME_ACCEPT_TRUNCATED]
+    reject_decisive_count = counts[Trial.OUTCOME_REJECT_DECISIVE]
+    reject_truncated_count = counts[Trial.OUTCOME_REJECT_TRUNCATED]
+
+    accept_count = accept_decisive_count + accept_truncated_count
+    reject_count = reject_decisive_count + reject_truncated_count
+
+    accept_fraction = accept_count / trial_count
+    reject_fraction = reject_count / trial_count
+
+    newline = '\n'
+    content = f'''\
+# {file_name}
+
+## Parameters
+
+theta_0 = {theta_0}
+theta_1 = {theta_1}
+theta = {theta}
+alpha = {alpha}
+beta = {beta}
+item_count = {item_count}
+trial_count = {trial_count}
+seed = {seed}
+
+## Geometry
+
+a = {a}
+b = {b}
+c = {c}
+r_0 = {r_0}
+t_0 = {t_0}
+r_corner = {r_corner}
+t_corner = {t_corner}
+
+## Summary of trial outcomes
+
+accept_decisive_count = {accept_decisive_count}
+accept_truncated_count = {accept_truncated_count}
+reject_decisive_count = {reject_decisive_count}
+reject_truncated_count = {reject_truncated_count}
+
+accept_count = {accept_count}
+reject_count = {reject_count}
+
+accept_fraction = {accept_fraction:.1%}
+reject_fraction = {reject_fraction:.1%}
+
+## Individual trial outcomes and walk coordinates
+
+{
+    newline.join(
+        f'Trial #{trial_index} ({trial.outcome}): {trial.walk_coordinates}'
+        for trial_index, trial in enumerate(trials, start=1)
+    )
+}
+'''
+
+    with open(file_name, 'w', encoding='utf-8') as file:
+        file.write(content)
+
+
 def save_rt_plot(a, c, r_0, t_0, r_corner, t_corner, trials, file_name):
     figure, axes = plt.subplots()
 
-    axes.plot([0, t_0], [a, r_corner], Trial.COLOUR_ACCEPTED)
-    axes.plot([t_0, t_0], [r_corner, r_0], Trial.COLOUR_TIME_REACHED)
-    axes.plot([0, t_corner], [c, r_0], Trial.COLOUR_REJECTED)
-    axes.plot([t_corner, t_0], [r_0, r_0], Trial.COLOUR_FAILURES_REACHED)
+    axes.plot([0, t_0], [a, r_corner], Trial.COLOUR_ACCEPT_DECISIVE)
+    axes.plot([t_0, t_0], [r_corner, r_0], Trial.COLOUR_ACCEPT_TRUNCATED)
+    axes.plot([0, t_corner], [c, r_0], Trial.COLOUR_REJECT_DECISIVE)
+    axes.plot([t_corner, t_0], [r_0, r_0], Trial.COLOUR_REJECT_TRUNCATED)
 
     for trial in trials:
         t_values, r_values = zip(*trial.walk_coordinates)
