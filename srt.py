@@ -105,6 +105,89 @@ from numpy import log
 from scipy.stats import chi2
 
 
+class Trial:
+    TERMINATE_ACCEPTED = 1
+    TERMINATE_TIME_REACHED = 2
+    TERMINATE_REJECTED = -1
+    TERMINATE_FAILURES_REACHED = -2
+
+    def __init__(self, theta_0, theta_1, theta, alpha, beta, item_count):
+        """
+        Run a single trial.
+        """
+        # Intercepts and slopes of the decision lines
+        a = acceptance_intercept(theta_0, theta_1, alpha, beta)
+        c = rejection_intercept(theta_0, theta_1, alpha, beta)
+        b = decision_slope(theta_0, theta_1)
+
+        # Hard cutoffs
+        r_0 = maximum_failure_count(theta_0, theta_1, alpha, beta)
+        t_0 = maximum_test_time(theta_0, theta_1, alpha, beta)
+
+        # Corner cases (intersections between hard cutoffs and decision lines)
+        r_corner = a + b * t_0  # between acceptance line and max time
+        t_corner = (r_0 - c) / b  # between rejection line and max failures
+
+        # Initialisation
+        t = 0
+        r = 0
+        t_values = []
+        r_values = []
+        items = [Item(theta) for _ in range(0, item_count)]
+
+        # Loop
+        while True:
+            # Time increment (horizontal step)
+            next_failing_item = min(items, key=lambda item: item.time_left)
+            individual_time_step = next_failing_item.time_left
+            next_t = t + item_count * individual_time_step
+            if r < r_corner:
+                if r <= a + b * next_t:
+                    t = (r - a) / b
+                    t_values.append(t)
+                    termination = Trial.TERMINATE_ACCEPTED
+                    break
+            else:
+                if next_t >= t_0:
+                    t = t_0
+                    t_values.append(t)
+                    termination = Trial.TERMINATE_TIME_REACHED
+                    break
+            for item in items:
+                item.age(individual_time_step)
+            t = next_t
+            t_values.append(t)
+
+            # Failure count increment (vertical step)
+            next_r = r + 1
+            if t < t_corner:
+                if next_r >= c + b * t:
+                    r = next_r
+                    r_values.append(r)
+                    termination = Trial.TERMINATE_REJECTED
+                    break
+            else:
+                if next_r >= r_0:
+                    r = r_0
+                    r_values.append(r)
+                    termination = Trial.TERMINATE_FAILURES_REACHED
+                    break
+            r = next_r
+            r_values.append(r)
+
+        self.termination = termination
+        self.t_values = t_values
+        self.r_values = r_values
+
+
+class Item:
+    def __init__(self, theta):
+        self.time_left = random.expovariate(1/theta)
+
+    def age(self, time_step):
+        self.time_left -= time_step
+
+
 def acceptance_probability_ratio(alpha, beta):
     """
     The lower bound B of the probability ratio, for acceptance.
@@ -118,7 +201,7 @@ def acceptance_probability_ratio(alpha, beta):
 
 def rejection_probability_ratio(alpha, beta):
     """
-    The upper bound A of the probability raio, for rejection.
+    The upper bound A of the probability ratio, for rejection.
 
     Given by
             A = (1 - beta) / alpha,
@@ -190,16 +273,10 @@ def maximum_test_time(theta_0, theta_1, alpha, beta):
     return theta_0 * chi2.ppf(alpha, df=2*r_0) / 2
 
 
-def run_trials(theta_0, theta_1, alpha, beta, item_count, trial_count, seed):
-    a = acceptance_intercept(theta_0, theta_1, alpha, beta)
-    c = rejection_intercept(theta_0, theta_1, alpha, beta)
-    b = decision_slope(theta_0, theta_1)
-    r_0 = maximum_failure_count(theta_0, theta_1, alpha, beta)
-    t_0 = maximum_test_time(theta_0, theta_1, alpha, beta)
-
+def test(theta_0, theta_1, theta, alpha, beta, item_count, trial_count, seed):
     random.seed(a=seed)
     trials = [
-        Trial(a, b, c, r_0, t_0, item_count)
+        Trial(theta_0, theta_1, theta, alpha, beta, item_count)
         for _ in range(0, trial_count)
     ]
 
@@ -220,6 +297,11 @@ def parse_command_line_arguments():
         'theta_1',
         type=float,
         help='lesser MTBF (alternative hypothesis)',
+    )
+    argument_parser.add_argument(
+        'theta',
+        type=float,
+        help='true MTBF for trials',
     )
     argument_parser.add_argument(
         'alpha',
@@ -262,13 +344,14 @@ def main():
 
     theta_0 = parsed_arguments.theta_0
     theta_1 = parsed_arguments.theta_1
+    theta = parsed_arguments.theta
     alpha = parsed_arguments.alpha
     beta = parsed_arguments.beta
     item_count = parsed_arguments.item_count
     trial_count = parsed_arguments.trial_count
     seed = parsed_arguments.seed
 
-    run_trials(theta_0, theta_1, alpha, beta, item_count, trial_count, seed)
+    test(theta_0, theta_1, theta, alpha, beta, item_count, trial_count, seed)
 
 
 if __name__ == '__main__':
