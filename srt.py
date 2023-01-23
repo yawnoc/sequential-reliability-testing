@@ -125,8 +125,7 @@ class Trial:
         """
         t = 0
         r = 0
-        t_values = []
-        r_values = []
+        walk_coordinates = [(t, r)]
         items = [Item(theta) for _ in range(0, item_count)]
 
         while True:
@@ -137,40 +136,43 @@ class Trial:
             if r < r_corner:
                 if r <= a + b * next_t:
                     t = (r - a) / b
-                    t_values.append(t)
+                    walk_coordinates.append((t, r))
                     termination = Trial.TERMINATE_ACCEPTED
                     break
             else:
                 if next_t >= t_0:
                     t = t_0
-                    t_values.append(t)
+                    walk_coordinates.append((t, r))
                     termination = Trial.TERMINATE_TIME_REACHED
                     break
+            t = next_t
+            walk_coordinates.append((t, r))
+
+            # Age items and perform replacement
             for item in items:
                 item.age(individual_time_step)
-            t = next_t
-            t_values.append(t)
+            items.remove(next_failing_item)
+            items.append(Item(theta))
 
             # Failure count increment (vertical step)
             next_r = r + 1
             if t < t_corner:
                 if next_r >= c + b * t:
                     r = next_r
-                    r_values.append(r)
+                    walk_coordinates.append((t, r))
                     termination = Trial.TERMINATE_REJECTED
                     break
             else:
                 if next_r >= r_0:
                     r = r_0
-                    r_values.append(r)
+                    walk_coordinates.append((t, r))
                     termination = Trial.TERMINATE_FAILURES_REACHED
                     break
             r = next_r
-            r_values.append(r)
+            walk_coordinates.append((t, r))
 
         self.termination = termination
-        self.t_values = t_values
-        self.r_values = r_values
+        self.walk_coordinates = walk_coordinates
 
 
 class Item:
@@ -291,16 +293,24 @@ def test(theta_0, theta_1, theta, alpha, beta, item_count, trial_count, seed):
         f' -i {item_count} -t {trial_count} -s {seed}'
     )
 
-    save_rt_plot(a, c, r_0, t_0, r_corner, t_corner, f'{base_name}.rt.svg')
+    save_rt_plot(
+        a, c, r_0, t_0, r_corner, t_corner,
+        trials,
+        f'{base_name}.rt.svg',
+    )
 
 
-def save_rt_plot(a, c, r_0, t_0, r_corner, t_corner, file_name):
+def save_rt_plot(a, c, r_0, t_0, r_corner, t_corner, trials, file_name):
     figure, axes = plt.subplots()
 
     axes.plot([0, t_0], [a, r_corner], Trial.COLOUR_ACCEPTED)
     axes.plot([t_0, t_0], [r_corner, r_0], Trial.COLOUR_TIME_REACHED)
     axes.plot([0, t_corner], [c, r_0], Trial.COLOUR_REJECTED)
     axes.plot([t_corner, t_0], [r_0, r_0], Trial.COLOUR_FAILURES_REACHED)
+
+    for trial in trials:
+        t_values, r_values = zip(*trial.walk_coordinates)
+        axes.plot(t_values, r_values)
 
     axes.set_xlim([0, t_0 * Trial.AXIS_LIMIT_MARGIN_FACTOR])
     axes.set_ylim([0, r_0 * Trial.AXIS_LIMIT_MARGIN_FACTOR])
