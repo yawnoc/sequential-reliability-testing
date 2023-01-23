@@ -98,9 +98,12 @@ Of note:
   and hence the accumulated time at
           T_0 = theta_0 * chi^2(1-alpha; 2r_0) / 2.
 """
+import argparse
 
 from numpy import log
 from scipy.stats import chi2
+
+DESCRIPTION = 'Perform sequential reliability testing.'
 
 
 def acceptance_probability_ratio(alpha, beta):
@@ -188,8 +191,39 @@ def maximum_test_time(theta_0, theta_1, alpha, beta):
     return theta_0 * chi2.ppf(alpha, df=2*r_0) / 2
 
 
+def parse_command_line_arguments():
+    argument_parser = argparse.ArgumentParser(description=DESCRIPTION)
+    argument_parser.add_argument(
+        'theta_0',
+        type=float,
+        help='greater MTBF (null hypothesis)',
+    )
+    argument_parser.add_argument(
+        'theta_1',
+        type=float,
+        help='lesser MTBF (alternative hypothesis)',
+    )
+    argument_parser.add_argument(
+        'alpha',
+        type=float,
+        help="producer's risk",
+    )
+    argument_parser.add_argument(
+        'beta',
+        type=float,
+        help="consumer's risk",
+    )
+    argument_parser.add_argument(
+        'n',
+        type=float,
+        help='item count',
+    )
+
+    return argument_parser.parse_args()
+
+
 def main():
-    pass
+    parse_command_line_arguments()
 
 
 if __name__ == '__main__':
