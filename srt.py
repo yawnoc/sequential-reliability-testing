@@ -120,7 +120,10 @@ class Trial:
 
     AXIS_LIMIT_MARGIN_FACTOR = 1.05
 
-    def __init__(self, theta, a, b, c, r_0, t_0, r_corner, t_corner, item_count):
+    def __init__(
+        self,
+        theta, a, b, c, r_0, t_0, r_corner, t_corner, item_count,
+    ):
         """
         Run a single trial.
         """
