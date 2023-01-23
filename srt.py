@@ -214,7 +214,8 @@ def parse_command_line_arguments():
         help="consumer's risk",
     )
     argument_parser.add_argument(
-        'n',
+        'item_count',
+        metavar='n',
         type=float,
         help='item count',
     )
@@ -223,7 +224,12 @@ def parse_command_line_arguments():
 
 
 def main():
-    parse_command_line_arguments()
+    parsed_arguments = parse_command_line_arguments()
+    theta_0 = parsed_arguments.theta_0
+    theta_1 = parsed_arguments.theta_1
+    alpha = parsed_arguments.alpha
+    beta = parsed_arguments.beta
+    item_count = parsed_arguments.item_count
 
 
 if __name__ == '__main__':
