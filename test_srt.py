@@ -21,10 +21,10 @@ class TestSrt(unittest.TestCase):
         # MIL-HDBK-781A > Section 5.9.5 (Sequential test example)
         self.assertAlmostEqual(
             acceptance_intercept(
-                alpha=0.1,
-                beta=0.1,
                 theta_0=200,
                 theta_1=100,
+                alpha=0.1,
+                beta=0.1,
             ),
             -3.17,
             delta=0.01,
@@ -42,10 +42,10 @@ class TestSrt(unittest.TestCase):
         # Epstein (1954) > Section 5 (Examples) > Problem 1
         self.assertEqual(
             maximum_failure_count(
-                alpha=0.05,
-                beta=0.05,
                 theta_0=10000,
                 theta_1=2000,
+                alpha=0.05,
+                beta=0.05,
             ),
             5,
         )
@@ -53,10 +53,10 @@ class TestSrt(unittest.TestCase):
         # MIL-HDBK-781A > Section 5.9.5 (Sequential test example)
         self.assertEqual(
             maximum_failure_count(
-                alpha=0.1,
-                beta=0.1,
                 theta_0=200,
                 theta_1=100,
+                alpha=0.1,
+                beta=0.1,
             ),
             15,
         )
@@ -65,10 +65,10 @@ class TestSrt(unittest.TestCase):
         # MIL-HDBK-781A > Section 5.9.5 (Sequential test example)
         self.assertAlmostEqual(
             maximum_test_time(
-                alpha=0.1,
-                beta=0.1,
                 theta_0=200,
                 theta_1=100,
+                alpha=0.1,
+                beta=0.1,
             ),
             2060,
             delta=0.1,
