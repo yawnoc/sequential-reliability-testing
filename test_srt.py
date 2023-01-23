@@ -8,7 +8,7 @@ Unit testing for `srt.py`.
 
 import unittest
 
-from srt import maximum_failure_count
+from srt import maximum_failure_count, maximum_test_time
 
 
 class TestSrt(unittest.TestCase):
@@ -33,6 +33,19 @@ class TestSrt(unittest.TestCase):
                 theta_1=100,
             ),
             15,
+        )
+
+    def test_maximum_test_time(self):
+        # MIL-HDBK-781A > Section 5.9.5 (Sequential test example)
+        self.assertAlmostEqual(
+            maximum_test_time(
+                alpha=0.1,
+                beta=0.1,
+                theta_0=200,
+                theta_1=100,
+            ),
+            2060,
+            delta=0.1,
         )
 
 

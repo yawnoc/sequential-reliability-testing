@@ -96,7 +96,7 @@ Of note:
   We cap the failure count at r_0 being the smallest integer r such that
           chi^2(1-alpha; 2r) / chi^2(beta; 2r) >= theta_1/theta_0,
   and hence the accumulated time at
-          T_0 = theta_0 * chi^2(1-alpha; 2r) / 2.
+          T_0 = theta_0 * chi^2(1-alpha; 2r_0) / 2.
 """
 
 from scipy.stats import chi2
@@ -114,6 +114,18 @@ def maximum_failure_count(theta_0, theta_1, alpha, beta):
         r += 1
 
     return r
+
+
+def maximum_test_time(theta_0, theta_1, alpha, beta):
+    """
+    The maximum cumulative test time.
+
+    Given by
+            theta_0 * chi^2(1-alpha; 2r_0) / 2,
+    where r_0 is determined by `maximum_failure_count`.
+    """
+    r_0 = maximum_failure_count(theta_0, theta_1, alpha, beta)
+    return theta_0 * chi2.ppf(alpha, df=2*r_0) / 2
 
 
 def main():
