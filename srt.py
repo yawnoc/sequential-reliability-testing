@@ -103,6 +103,7 @@ import random
 from collections import Counter
 
 import matplotlib.pyplot as plt
+import numpy as np
 from numpy import log
 from scipy.stats import chi2
 
@@ -308,6 +309,10 @@ def test(theta_0, theta_1, theta, alpha, beta, item_count, trial_count, seed):
         trials,
         f'{base_name}.rt.svg',
     )
+    save_oc_plot(
+        theta_0, theta_1, alpha, beta,
+        f'{base_name}.oc.svg',
+    )
 
 
 def save_log(
@@ -399,6 +404,32 @@ def save_rt_plot(a, c, r_0, t_0, r_corner, t_corner, trials, file_name):
         title=f'Sequential Reliability Test Trials\n`{file_name}`',
         xlabel='Time / h',
         ylabel='Failure Count',
+    )
+
+    plt.savefig(file_name)
+
+
+def save_oc_plot(theta_0, theta_1, alpha, beta, file_name):
+    capital_a = rejection_probability_ratio(alpha, beta)
+    capital_b = acceptance_probability_ratio(alpha, beta)
+
+    h_values = np.linspace(-10, 3, 100)
+    theta_values = (
+        ((theta_0/theta_1) ** h_values - 1)
+        / (h_values * (1/theta_1 - 1/theta_0))
+    )
+    capital_l_values = (
+        (capital_a ** h_values - 1)
+        / (capital_a ** h_values - capital_b ** h_values)
+    )
+
+    figure, axes = plt.subplots()
+
+    axes.plot(theta_values, capital_l_values)
+    axes.set(
+        title=f'Operating Characteristic Curve\n`{file_name}`',
+        xlabel='True MTBF / h',
+        ylabel='Acceptance Probability',
     )
 
     plt.savefig(file_name)
