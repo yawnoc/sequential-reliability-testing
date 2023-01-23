@@ -21,7 +21,7 @@ Summary:
 - H_0: theta = theta_0    (with Type I error at probability alpha)
 - H_1: theta = theta_1    (with Type II error at probability beta)
 - theta_1 < theta_0
-- k = theta_0/theta_1 > 1
+- k = d = theta_0/theta_1 > 1    (discrimination factor)
 - Continue the test if
           B < (theta_0/theta_1)^r exp[-(1/theta_1 - 1/theta_0) V(t)] < A,
   where, per Wald,
@@ -120,7 +120,7 @@ def rejection_probability_ratio(alpha, beta):
 
     Given by
             A = (1 - beta) / alpha,
-    per Wald.
+    per Wald. Currently ignores the correction factor of (d+1)/(2d).
     """
     return (1 - beta) / alpha
 
