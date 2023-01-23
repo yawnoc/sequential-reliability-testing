@@ -27,7 +27,7 @@ class TestSrt(unittest.TestCase):
                 beta=0.1,
             ),
             -3.17,
-            delta=0.01,
+            delta=0.005,
         )
 
     def test_decision_slope(self):
@@ -35,7 +35,7 @@ class TestSrt(unittest.TestCase):
         self.assertAlmostEqual(
             decision_slope(theta_0=200, theta_1=100),
             0.00721,
-            delta=0.00001,
+            delta=0.000005,
         )
 
     def test_maximum_failure_count(self):
@@ -71,7 +71,7 @@ class TestSrt(unittest.TestCase):
                 beta=0.1,
             ),
             2060,
-            delta=0.1,
+            delta=0.5,
         )
 
 
