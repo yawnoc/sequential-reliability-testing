@@ -114,6 +114,17 @@ def acceptance_probability_ratio(alpha, beta):
     return beta / (1 - alpha)
 
 
+def rejection_probability_ratio(alpha, beta):
+    """
+    The upper bound A of the probability raio, for rejection.
+
+    Given by
+            A = (1 - beta) / alpha,
+    per Wald.
+    """
+    return (1 - beta) / alpha
+
+
 def acceptance_intercept(theta_0, theta_1, alpha, beta):
     """
     The failure count for the acceptance line at nil time.
@@ -125,6 +136,19 @@ def acceptance_intercept(theta_0, theta_1, alpha, beta):
     """
     capital_b = acceptance_probability_ratio(alpha, beta)
     return log(capital_b) / log(theta_0/theta_1)
+
+
+def rejection_intercept(theta_0, theta_1, alpha, beta):
+    """
+    The failure count for the rejection line at nil time.
+
+    Denoted by c in MIL-HDBK-781A, and h_1/s in Epstein & Sobel (1955).
+    Given by
+            c = +h_1/s = log(A) / log(theta_0/theta_1),
+    where A is determined by `rejection_probability_ratio`.
+    """
+    capital_a = rejection_probability_ratio(alpha, beta)
+    return log(capital_a) / log(theta_0/theta_1)
 
 
 def decision_slope(theta_0, theta_1):

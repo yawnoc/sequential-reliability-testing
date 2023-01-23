@@ -10,6 +10,7 @@ import unittest
 
 from srt import (
     acceptance_intercept,
+    rejection_intercept,
     decision_slope,
     maximum_failure_count,
     maximum_test_time,
@@ -27,6 +28,19 @@ class TestSrt(unittest.TestCase):
                 beta=0.1,
             ),
             -3.17,
+            delta=0.005,
+        )
+
+    def test_rejection_intercept(self):
+        # MIL-HDBK-781A > Section 5.9.5 (Sequential test example)
+        self.assertAlmostEqual(
+            rejection_intercept(
+                theta_0=200,
+                theta_1=100,
+                alpha=0.1,
+                beta=0.1,
+            ),
+            2.75,
             delta=0.005,
         )
 
