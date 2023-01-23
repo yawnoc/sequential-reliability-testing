@@ -103,8 +103,6 @@ import argparse
 from numpy import log
 from scipy.stats import chi2
 
-DESCRIPTION = 'Perform sequential reliability testing.'
-
 
 def acceptance_probability_ratio(alpha, beta):
     """
@@ -199,6 +197,11 @@ def perform_test(theta_0, theta_1, alpha, beta, item_count, seed):
     t_0 = maximum_test_time(theta_0, theta_1, alpha, beta)
 
 
+DESCRIPTION = 'Perform sequential reliability testing.'
+DEFAULT_ITEM_COUNT = 1
+DEFAULT_TRIAL_COUNT = 10
+
+
 def parse_command_line_arguments():
     argument_parser = argparse.ArgumentParser(description=DESCRIPTION)
     argument_parser.add_argument(
@@ -222,10 +225,20 @@ def parse_command_line_arguments():
         help="consumer's risk",
     )
     argument_parser.add_argument(
-        'item_count',
-        metavar='n',
+        '-i',
+        default=DEFAULT_ITEM_COUNT,
+        dest='item_count',
+        metavar='ITEMS',
         type=float,
-        help='item count',
+        help=f'item count (default {DEFAULT_ITEM_COUNT})',
+    )
+    argument_parser.add_argument(
+        '-t',
+        default=DEFAULT_TRIAL_COUNT,
+        dest='trial_count',
+        metavar='TRIALS',
+        type=float,
+        help=f'trial count (default {DEFAULT_TRIAL_COUNT})',
     )
     argument_parser.add_argument(
         '-s',
