@@ -8,10 +8,22 @@ Unit testing for `srt.py`.
 
 import unittest
 
-from srt import maximum_failure_count, maximum_test_time
+from srt import (
+    decision_slope,
+    maximum_failure_count,
+    maximum_test_time,
+)
 
 
 class TestSrt(unittest.TestCase):
+    def test_decision_slope(self):
+        # MIL-HDBK-781A > Section 5.9.5 (Sequential test example)
+        self.assertAlmostEqual(
+            decision_slope(theta_0=200, theta_1=100),
+            0.00721,
+            delta=0.00001,
+        )
+
     def test_maximum_failure_count(self):
         # Epstein (1954) > Section 5 (Examples) > Problem 1
         self.assertEqual(

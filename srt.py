@@ -99,7 +99,19 @@ Of note:
           T_0 = theta_0 * chi^2(1-alpha; 2r_0) / 2.
 """
 
+from numpy import log
 from scipy.stats import chi2
+
+
+def decision_slope(theta_0, theta_1):
+    """
+    The slope (failure count per time) of the decision lines.
+
+    Denoted by b in MIL-HDBK-781A, and 1/s in Epstein & Sobel (1955).
+    Given by
+            (1/theta_1 - 1/theta_0) / log(theta_0/theta_1).
+    """
+    return (1/theta_1 - 1/theta_0) / log(theta_0/theta_1)
 
 
 def maximum_failure_count(theta_0, theta_1, alpha, beta):
