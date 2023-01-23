@@ -192,7 +192,11 @@ def maximum_test_time(theta_0, theta_1, alpha, beta):
 
 
 def perform_test(theta_0, theta_1, alpha, beta, item_count, seed):
-    pass
+    a = acceptance_intercept(theta_0, theta_1, alpha, beta)
+    c = rejection_intercept(theta_0, theta_1, alpha, beta)
+    b = decision_slope(theta_0, theta_1)
+    r_0 = maximum_failure_count(theta_0, theta_1, alpha, beta)
+    t_0 = maximum_test_time(theta_0, theta_1, alpha, beta)
 
 
 def parse_command_line_arguments():
