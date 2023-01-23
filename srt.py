@@ -101,6 +101,7 @@ Of note:
 import argparse
 import random
 
+import matplotlib.pyplot as plt
 from numpy import log
 from scipy.stats import chi2
 
@@ -110,6 +111,13 @@ class Trial:
     TERMINATE_TIME_REACHED = 2
     TERMINATE_REJECTED = -1
     TERMINATE_FAILURES_REACHED = -2
+
+    COLOUR_ACCEPTED = 'green'
+    COLOUR_TIME_REACHED = 'turquoise'
+    COLOUR_REJECTED = 'crimson'
+    COLOUR_FAILURES_REACHED = 'orangered'
+
+    AXIS_LIMIT_MARGIN_FACTOR = 1.05
 
     def __init__(self, theta_0, theta_1, theta, alpha, beta, item_count):
         """
@@ -175,9 +183,39 @@ class Trial:
             r = next_r
             r_values.append(r)
 
+        self.a = a
+        self.b = b
+        self.c = c
+        self.r_0 = r_0
+        self.t_0 = t_0
+        self.r_corner = r_corner
+        self.t_corner = t_corner
         self.termination = termination
         self.t_values = t_values
         self.r_values = r_values
+
+    def save_plot(self, file_name):
+        a = self.a
+        c = self.c
+        r_0 = self.r_0
+        t_0 = self.t_0
+        r_corner = self.r_corner
+        t_corner = self.t_corner
+        t_values = self.t_values
+        r_values = self.r_values
+
+        figure, axes = plt.subplots()
+
+        # Testing region
+        axes.plot([0, t_0], [a, r_corner], Trial.COLOUR_ACCEPTED)
+        axes.plot([t_0, t_0], [r_corner, r_0], Trial.COLOUR_TIME_REACHED)
+        axes.plot([0, t_corner], [c, r_0], Trial.COLOUR_REJECTED)
+        axes.plot([t_corner, t_0], [r_0, r_0], Trial.COLOUR_FAILURES_REACHED)
+
+        axes.set_xlim([0, t_0 * Trial.AXIS_LIMIT_MARGIN_FACTOR])
+        axes.set_ylim([0, r_0 * Trial.AXIS_LIMIT_MARGIN_FACTOR])
+
+        plt.savefig(file_name)
 
 
 class Item:
@@ -280,6 +318,15 @@ def test(theta_0, theta_1, theta, alpha, beta, item_count, trial_count, seed):
         for _ in range(0, trial_count)
     ]
 
+    name_prefix = (
+        f'{theta_0} {theta_1} {theta} {alpha} {beta}'
+        f' -i {item_count} -t {trial_count} -s {seed}'
+    )
+
+    for trial_index, trial in enumerate(trials):
+        file_name = f'{name_prefix} - {trial_index}.svg'
+        trial.save_plot(file_name)
+
 
 DESCRIPTION = 'Perform sequential reliability testing.'
 DEFAULT_ITEM_COUNT = 1
@@ -318,7 +365,7 @@ def parse_command_line_arguments():
         default=DEFAULT_ITEM_COUNT,
         dest='item_count',
         metavar='ITEMS',
-        type=float,
+        type=int,
         help=f'item count (default {DEFAULT_ITEM_COUNT})',
     )
     argument_parser.add_argument(
@@ -326,7 +373,7 @@ def parse_command_line_arguments():
         default=DEFAULT_TRIAL_COUNT,
         dest='trial_count',
         metavar='TRIALS',
-        type=float,
+        type=int,
         help=f'trial count (default {DEFAULT_TRIAL_COUNT})',
     )
     argument_parser.add_argument(
