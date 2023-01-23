@@ -99,6 +99,7 @@ Of note:
           T_0 = theta_0 * chi^2(1-alpha; 2r_0) / 2.
 """
 import argparse
+import random
 
 from numpy import log
 from scipy.stats import chi2
@@ -189,12 +190,18 @@ def maximum_test_time(theta_0, theta_1, alpha, beta):
     return theta_0 * chi2.ppf(alpha, df=2*r_0) / 2
 
 
-def perform_test(theta_0, theta_1, alpha, beta, item_count, seed):
+def run_trials(theta_0, theta_1, alpha, beta, item_count, trial_count, seed):
     a = acceptance_intercept(theta_0, theta_1, alpha, beta)
     c = rejection_intercept(theta_0, theta_1, alpha, beta)
     b = decision_slope(theta_0, theta_1)
     r_0 = maximum_failure_count(theta_0, theta_1, alpha, beta)
     t_0 = maximum_test_time(theta_0, theta_1, alpha, beta)
+
+    random.seed(a=seed)
+    trials = [
+        Trial(a, b, c, r_0, t_0, item_count)
+        for _ in range(0, trial_count)
+    ]
 
 
 DESCRIPTION = 'Perform sequential reliability testing.'
@@ -258,9 +265,10 @@ def main():
     alpha = parsed_arguments.alpha
     beta = parsed_arguments.beta
     item_count = parsed_arguments.item_count
+    trial_count = parsed_arguments.trial_count
     seed = parsed_arguments.seed
 
-    perform_test(theta_0, theta_1, alpha, beta, item_count, seed)
+    run_trials(theta_0, theta_1, alpha, beta, item_count, trial_count, seed)
 
 
 if __name__ == '__main__':
