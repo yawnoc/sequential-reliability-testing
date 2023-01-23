@@ -103,20 +103,44 @@ from numpy import log
 from scipy.stats import chi2
 
 
+def acceptance_probability_ratio(alpha, beta):
+    """
+    The lower bound B of the probability ratio, for acceptance.
+
+    Given by
+            B = beta / (1 - alpha),
+    per Wald.
+    """
+    return beta / (1 - alpha)
+
+
+def acceptance_intercept(theta_0, theta_1, alpha, beta):
+    """
+    The failure count for the acceptance line at nil time.
+
+    Denoted by a in MIL-HDBK-781A, and -h_0/s in Epstein & Sobel (1955).
+    Given by
+            a = -h_0/s = log(B) / log(theta_0/theta_1),
+    where B is determined by `acceptance_probability_ratio`.
+    """
+    capital_b = acceptance_probability_ratio(alpha, beta)
+    return log(capital_b) / log(theta_0/theta_1)
+
+
 def decision_slope(theta_0, theta_1):
     """
     The slope (failure count per time) of the decision lines.
 
     Denoted by b in MIL-HDBK-781A, and 1/s in Epstein & Sobel (1955).
     Given by
-            (1/theta_1 - 1/theta_0) / log(theta_0/theta_1).
+            b = 1/s = (1/theta_1 - 1/theta_0) / log(theta_0/theta_1).
     """
     return (1/theta_1 - 1/theta_0) / log(theta_0/theta_1)
 
 
 def maximum_failure_count(theta_0, theta_1, alpha, beta):
     """
-    The maximum failure count for truncation.
+    The maximum failure count r_0 for truncation.
 
     Given by the smallest integer r such that
           chi^2(1-alpha; 2r) / chi^2(beta; 2r) >= theta_1/theta_0.
@@ -130,7 +154,7 @@ def maximum_failure_count(theta_0, theta_1, alpha, beta):
 
 def maximum_test_time(theta_0, theta_1, alpha, beta):
     """
-    The maximum cumulative test time.
+    The maximum cumulative test time T_0.
 
     Given by
             theta_0 * chi^2(1-alpha; 2r_0) / 2,
