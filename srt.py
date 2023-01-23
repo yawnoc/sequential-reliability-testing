@@ -119,31 +119,16 @@ class Trial:
 
     AXIS_LIMIT_MARGIN_FACTOR = 1.05
 
-    def __init__(self, theta_0, theta_1, theta, alpha, beta, item_count):
+    def __init__(self, theta, a, b, c, r_0, t_0, r_corner, t_corner, item_count):
         """
         Run a single trial.
         """
-        # Intercepts and slopes of the decision lines
-        a = acceptance_intercept(theta_0, theta_1, alpha, beta)
-        c = rejection_intercept(theta_0, theta_1, alpha, beta)
-        b = decision_slope(theta_0, theta_1)
-
-        # Hard cutoffs
-        r_0 = maximum_failure_count(theta_0, theta_1, alpha, beta)
-        t_0 = maximum_test_time(theta_0, theta_1, alpha, beta)
-
-        # Corner cases (intersections between hard cutoffs and decision lines)
-        r_corner = a + b * t_0  # between acceptance line and max time
-        t_corner = (r_0 - c) / b  # between rejection line and max failures
-
-        # Initialisation
         t = 0
         r = 0
         t_values = []
         r_values = []
         items = [Item(theta) for _ in range(0, item_count)]
 
-        # Loop
         while True:
             # Time increment (horizontal step)
             next_failing_item = min(items, key=lambda item: item.time_left)
@@ -183,39 +168,9 @@ class Trial:
             r = next_r
             r_values.append(r)
 
-        self.a = a
-        self.b = b
-        self.c = c
-        self.r_0 = r_0
-        self.t_0 = t_0
-        self.r_corner = r_corner
-        self.t_corner = t_corner
         self.termination = termination
         self.t_values = t_values
         self.r_values = r_values
-
-    def save_plot(self, file_name):
-        a = self.a
-        c = self.c
-        r_0 = self.r_0
-        t_0 = self.t_0
-        r_corner = self.r_corner
-        t_corner = self.t_corner
-        t_values = self.t_values
-        r_values = self.r_values
-
-        figure, axes = plt.subplots()
-
-        # Testing region
-        axes.plot([0, t_0], [a, r_corner], Trial.COLOUR_ACCEPTED)
-        axes.plot([t_0, t_0], [r_corner, r_0], Trial.COLOUR_TIME_REACHED)
-        axes.plot([0, t_corner], [c, r_0], Trial.COLOUR_REJECTED)
-        axes.plot([t_corner, t_0], [r_0, r_0], Trial.COLOUR_FAILURES_REACHED)
-
-        axes.set_xlim([0, t_0 * Trial.AXIS_LIMIT_MARGIN_FACTOR])
-        axes.set_ylim([0, r_0 * Trial.AXIS_LIMIT_MARGIN_FACTOR])
-
-        plt.savefig(file_name)
 
 
 class Item:
@@ -312,20 +267,45 @@ def maximum_test_time(theta_0, theta_1, alpha, beta):
 
 
 def test(theta_0, theta_1, theta, alpha, beta, item_count, trial_count, seed):
+    # Intercepts and slopes of the decision lines
+    a = acceptance_intercept(theta_0, theta_1, alpha, beta)
+    c = rejection_intercept(theta_0, theta_1, alpha, beta)
+    b = decision_slope(theta_0, theta_1)
+
+    # Hard cutoffs
+    r_0 = maximum_failure_count(theta_0, theta_1, alpha, beta)
+    t_0 = maximum_test_time(theta_0, theta_1, alpha, beta)
+
+    # Corner cases (intersections between hard cutoffs and decision lines)
+    r_corner = a + b * t_0  # between acceptance line and max time
+    t_corner = (r_0 - c) / b  # between rejection line and max failures
+
     random.seed(a=seed)
     trials = [
-        Trial(theta_0, theta_1, theta, alpha, beta, item_count)
+        Trial(theta, a, b, c, r_0, t_0, r_corner, t_corner, item_count)
         for _ in range(0, trial_count)
     ]
 
-    name_prefix = (
+    base_name = (
         f'{theta_0} {theta_1} {theta} {alpha} {beta}'
         f' -i {item_count} -t {trial_count} -s {seed}'
     )
 
-    for trial_index, trial in enumerate(trials):
-        file_name = f'{name_prefix} - {trial_index}.svg'
-        trial.save_plot(file_name)
+    save_rt_plot(a, c, r_0, t_0, r_corner, t_corner, f'{base_name}.rt.svg')
+
+
+def save_rt_plot(a, c, r_0, t_0, r_corner, t_corner, file_name):
+    figure, axes = plt.subplots()
+
+    axes.plot([0, t_0], [a, r_corner], Trial.COLOUR_ACCEPTED)
+    axes.plot([t_0, t_0], [r_corner, r_0], Trial.COLOUR_TIME_REACHED)
+    axes.plot([0, t_corner], [c, r_0], Trial.COLOUR_REJECTED)
+    axes.plot([t_corner, t_0], [r_0, r_0], Trial.COLOUR_FAILURES_REACHED)
+
+    axes.set_xlim([0, t_0 * Trial.AXIS_LIMIT_MARGIN_FACTOR])
+    axes.set_ylim([0, r_0 * Trial.AXIS_LIMIT_MARGIN_FACTOR])
+
+    plt.savefig(file_name)
 
 
 DESCRIPTION = 'Perform sequential reliability testing.'
