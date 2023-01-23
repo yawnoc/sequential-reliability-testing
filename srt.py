@@ -99,6 +99,22 @@ Of note:
           T_0 = theta_0 * chi^2(1-alpha; 2r) / 2.
 """
 
+from scipy.stats import chi2
+
+
+def maximum_failure_count(theta_0, theta_1, alpha, beta):
+    """
+    The maximum failure count for truncation.
+
+    Given by the smallest integer r such that
+          chi^2(1-alpha; 2r) / chi^2(beta; 2r) >= theta_1/theta_0.
+    """
+    r = 1
+    while chi2.ppf(alpha, df=2*r) / chi2.ppf(1-beta, df=2*r) < theta_1/theta_0:
+        r += 1
+
+    return r
+
 
 def main():
     pass
