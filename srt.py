@@ -191,7 +191,7 @@ def maximum_test_time(theta_0, theta_1, alpha, beta):
     return theta_0 * chi2.ppf(alpha, df=2*r_0) / 2
 
 
-def perform_test(theta_0, theta_1, alpha, beta, item_count):
+def perform_test(theta_0, theta_1, alpha, beta, item_count, seed):
     pass
 
 
@@ -223,6 +223,12 @@ def parse_command_line_arguments():
         type=float,
         help='item count',
     )
+    argument_parser.add_argument(
+        '-s',
+        dest='seed',
+        type=int,
+        help='seed (integer) for deterministic runs',
+    )
 
     return argument_parser.parse_args()
 
@@ -235,8 +241,9 @@ def main():
     alpha = parsed_arguments.alpha
     beta = parsed_arguments.beta
     item_count = parsed_arguments.item_count
+    seed = parsed_arguments.seed
 
-    perform_test(theta_0, theta_1, alpha, beta, item_count)
+    perform_test(theta_0, theta_1, alpha, beta, item_count, seed)
 
 
 if __name__ == '__main__':
