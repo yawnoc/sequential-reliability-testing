@@ -40,7 +40,7 @@ class TestSrt(unittest.TestCase):
                 alpha=0.1,
                 beta=0.1,
             ),
-            3.17,  # not 2.75 as we ignore the correction factor of (2+1)/(2*2)
+            2.75,
             delta=0.005,
         )
 

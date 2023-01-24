@@ -3,7 +3,7 @@
 """
 # srt.py
 
-Sequential Reliability Testing.
+Sequential Reliability Testing, according unto MIL-HDBK-781A.
 
 
 ## Epstein & Sobel (1955)
@@ -46,6 +46,9 @@ Summary:
           theta = [(theta_0/theta_1)^h - 1] / [h (1/theta_1 - 1/theta_0)]
   where h runs through the reals.
 - L(theta) is the probability of accepting H_0 when theta is true parameter.
+- Note that A and B should be replaced by some A* <= A and B* >= B
+  in order for the risks to be exactly alpha and beta.
+  Heuristically we use A** = A (k+1)/(2k) in place of A, and keep B as is.
 
 
 ## Epstein (1954)
@@ -79,6 +82,10 @@ Of note:
 - There is a typo in the expression for probability ratio.
   The factor (theta_1/theta_0)^r should be (theta_0/theta_1)^r
   per equation (2) of Epstein & Sobel (1955).
+- The rejection probability ratio A incorporates the correction factor.
+  That is, we have
+          A = (1 - beta)(d + 1) / (2 alpha d)
+  which is called A** in Epstein & Sobel (1955).
 - The decision inequality is given in terms of bounds on failure count
   rather than time, as
           a + b t < r < c + b t.
@@ -199,15 +206,16 @@ def acceptance_probability_ratio(alpha, beta):
     return beta / (1 - alpha)
 
 
-def rejection_probability_ratio(alpha, beta):
+def rejection_probability_ratio(theta_0, theta_1, alpha, beta):
     """
     The upper bound A of the probability ratio, for rejection.
 
+    Denoted by A in MIL-HDBK-781A, and A** in Epstein & Sobel (1955).
     Given by
-            A = (1 - beta) / alpha,
-    per Wald. Currently ignores the correction factor of (d+1)/(2d).
+            A = (1 - beta)(d + 1) / (2 alpha d).
     """
-    return (1 - beta) / alpha
+    d = theta_0 / theta_1
+    return (1 - beta) * (d + 1) / (2 * alpha * d)
 
 
 def acceptance_intercept(theta_0, theta_1, alpha, beta):
@@ -232,7 +240,7 @@ def rejection_intercept(theta_0, theta_1, alpha, beta):
             c = +h_1/s = log(A) / log(theta_0/theta_1),
     where A is determined by `rejection_probability_ratio`.
     """
-    capital_a = rejection_probability_ratio(alpha, beta)
+    capital_a = rejection_probability_ratio(theta_0, theta_1, alpha, beta)
     return log(capital_a) / log(theta_0/theta_1)
 
 
@@ -410,7 +418,7 @@ def save_rt_plot(a, c, r_0, t_0, r_corner, t_corner, trials, file_name):
 
 
 def save_oc_plot(theta_0, theta_1, alpha, beta, file_name):
-    capital_a = rejection_probability_ratio(alpha, beta)
+    capital_a = rejection_probability_ratio(theta_0, theta_1, alpha, beta)
     capital_b = acceptance_probability_ratio(alpha, beta)
 
     h_values = np.linspace(-10, 3, 100)
