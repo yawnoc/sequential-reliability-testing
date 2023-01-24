@@ -495,7 +495,7 @@ def parse_command_line_arguments():
         '-s',
         dest='seed',
         type=int,
-        help='seed (integer) for deterministic runs',
+        help='integer seed for deterministic runs',
     )
 
     return argument_parser.parse_args()
