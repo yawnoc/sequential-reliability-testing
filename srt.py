@@ -5,6 +5,10 @@
 
 Sequential Reliability Testing, according unto MIL-HDBK-781A.
 
+**Copyright 2023 Conway**
+Licensed under the GNU General Public License v3.0 (GPL-3.0-only).
+This is free software with NO WARRANTY etc. etc., see LICENSE.
+
 
 ## Epstein & Sobel (1955)
 

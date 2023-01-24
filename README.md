@@ -24,3 +24,13 @@ optional arguments:
   -t TRIALS   trial count (default 10)
   -s SEED     integer seed for deterministic runs
 ```
+
+
+## License
+
+**Copyright 2023 Conway** <br>
+Licensed under the GNU General Public License v3.0 (GPL-3.0-only). <br>
+This is free software with NO WARRANTY etc. etc., see [LICENSE]. <br>
+
+
+[LICENSE]: LICENSE
