@@ -443,7 +443,10 @@ def save_oc_plot(theta_0, theta_1, alpha, beta, file_name):
     plt.savefig(file_name)
 
 
-DESCRIPTION = 'Perform sequential reliability testing.'
+DESCRIPTION = (
+    'Perform sequential reliability testing. '
+    'Generates a LOG file and some SVGs.'
+)
 DEFAULT_ITEM_COUNT = 1
 DEFAULT_TRIAL_COUNT = 10
 
